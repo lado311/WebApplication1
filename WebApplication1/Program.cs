@@ -1,28 +1,34 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Always enable Swagger (optional, works in Production)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = string.Empty; // Swagger at root "/"
+});
 
-app.UseHttpsRedirection();
+// Optional: Minimal test endpoint
+app.MapGet("/", () => "API is running successfully");
+
+// Use HTTPS redirection if needed
+// app.UseHttpsRedirection(); // Render handles HTTPS via reverse proxy
 
 app.UseAuthorization();
 
+// Bind to Render-assigned PORT
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://*:{port}");
+Console.WriteLine($"Listening on port {port}");
 
+// Map Controllers
 app.MapControllers();
 
 app.Run();
